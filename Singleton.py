@@ -38,7 +38,7 @@ class SingletonDecorator:
         pass
 
 
-# FIXME: 使用类，多线程IO不适用
+# FIXME: 使用类方法，多线程IO不适用
 class SingletonClass:
     """
     实例化时用SingletonClass.instance()方法
@@ -54,7 +54,7 @@ class SingletonClass:
         return cls._instance
 
 
-# TODO: 使用类，加线程锁！
+# TODO: 使用类方法，加线程锁！
 class SingletonClassLock:
     """
     实例化时用SingletonClassLock.instance()方法
@@ -68,8 +68,7 @@ class SingletonClassLock:
     def instance(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
             with cls._instance_lock:
-                if not hasattr(cls, '_instance'):
-                    cls._instance = cls(*args, **kwargs)
+                cls._instance = cls(*args, **kwargs)
         return cls._instance
 
 
@@ -77,15 +76,17 @@ class SingletonClassLock:
 class SingletonNew:
     """实例化时用SingleNew()即可"""
     _instance_lock = threading.Lock()
+    _first_init = True
 
     def __init__(self):
+        if self._first_init:
+            self._first_init = False
         time.sleep(1)
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
             with cls._instance_lock:
-                if not hasattr(cls, '_instance'):
-                    cls._instance = object.__new__(cls)
+                cls._instance = super().__new__(cls)
         return cls._instance
 
 # def task(*args):
@@ -107,8 +108,7 @@ class SingletonType(type):
     def __call__(cls, *args, **kwargs):
         if not hasattr(cls, "_instance"):
             with cls._instance_lock:
-                if not hasattr(cls, '_instance'):
-                    cls._instance = super(cls).__call__(*args, **kwargs)
+                cls._instance = super().__call__(*args, **kwargs)
         return cls._instance
 
 
